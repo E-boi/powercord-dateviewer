@@ -6,12 +6,14 @@ const { getModule } = require('powercord/webpack');
 module.exports = class dateViewer extends Plugin {
   startPlugin() {
     this.loadStylesheet('style.css')
+    this.interval
+    this.timeout
     this.state = {
       time: '', date: '', weekday: ''
     };
     this.patchMemberList()
   }
-  updateFucker() {
+  updateTime() {
     const element = document.querySelector('.membersWrap-2h-GB4')
     const getViewer = document.querySelector('.dv-main')
     if (getViewer) {
@@ -21,12 +23,12 @@ module.exports = class dateViewer extends Plugin {
     const elm = createElement('div', { id: 'dv-mount' })
     element.append(elm)
     elm.append(createElement('div', { className: 'dv-main', innerHTML: `<span class='dv-time'>${this.state.time}</span><span class='dv-date'>${this.state.date}</span><span class='dv-weekday'>${this.state.weekday}</span>` }))
-    setInterval(() => this.update(), 1000)
+    this.interval = setInterval(() => this.update(), 1000)
   }
   update() {
-    setTimeout(() => this.updateFucker(), 1000)
+    this.timeout = setTimeout(() => this.updateTime(), 1000)
     const date = new Date();
-    const lang = document.documentElement.lang;
+    const lang = document.documentElement.lang
     this.state = {
       time: date.toLocaleTimeString(lang),
       date: date.toLocaleDateString(lang, { day: '2-digit', month: '2-digit', year: 'numeric' }),
@@ -36,10 +38,7 @@ module.exports = class dateViewer extends Plugin {
   patchMemberList() {
     const { ListThin } = getModule(['ListThin'], false);
     inject('memberList', ListThin, 'render', (_, res) => {
-      if (!document.querySelector('.membersWrap-2h-GB4')) {
-        clearInterval()
-        return res
-      }
+      if (!document.querySelector('.membersWrap-2h-GB4')) return res
       this.update()
       return res
     })
@@ -49,6 +48,9 @@ module.exports = class dateViewer extends Plugin {
     if (memberList) getOwnerInstance(memberList).forceUpdate();
   }
   pluginWillUnload() {
+    clearInterval(this.interval)
+    clearTimeout(this.timeout)
     uninject('memberList')
+    document.getElementById('dv-mount').remove()
   }
 }
