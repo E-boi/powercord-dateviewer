@@ -1,13 +1,11 @@
 const { Plugin } = require('powercord/entities');
 const { inject, uninject } = require('powercord/injector');
-const { createElement, getOwnerInstance } = require('powercord/util')
-const { getModule } = require('powercord/webpack');
+const { createElement } = require('powercord/util')
+const { getModule, React, ReactDOM } = require('powercord/webpack');
 
 module.exports = class dateViewer extends Plugin {
   startPlugin() {
     this.loadStylesheet('style.css')
-    this.interval
-    this.timeout
     this.state = {
       time: '', date: '', weekday: ''
     };
@@ -17,39 +15,35 @@ module.exports = class dateViewer extends Plugin {
     const element = document.querySelector('.membersWrap-2h-GB4')
     const getViewer = document.querySelector('.dv-main')
     if (getViewer) {
-      return getViewer.innerHTML = `<span class='dv-time'>${this.state.time}</span><span class='dv-date'>${this.state.date}</span><span class='dv-weekday'>${this.state.weekday}</span>`
+      const date = new Date()
+      const lang = document.documentElement.lang
+      this.state = {
+        time: date.toLocaleTimeString(lang),
+        date: date.toLocaleDateString(lang, { day: '2-digit', month: '2-digit', year: 'numeric' }),
+        weekday: date.toLocaleDateString(lang, { weekday: 'long' })
+      };
+      return getViewer.childNodes.forEach((ele, key) => ele.textContent = Object.entries(this.state)[key][1])
     }
     if (!element) return
-    const elm = createElement('div', { id: 'dv-mount' })
-    element.append(elm)
-    elm.append(createElement('div', { className: 'dv-main', innerHTML: `<span class='dv-time'>${this.state.time}</span><span class='dv-date'>${this.state.date}</span><span class='dv-weekday'>${this.state.weekday}</span>` }))
-    this.interval = setInterval(() => this.update(), 1000)
-  }
-  update() {
-    this.timeout = setTimeout(() => this.updateTime(), 1000)
-    const date = new Date();
-    const lang = document.documentElement.lang
-    this.state = {
-      time: date.toLocaleTimeString(lang),
-      date: date.toLocaleDateString(lang, { day: '2-digit', month: '2-digit', year: 'numeric' }),
-      weekday: date.toLocaleDateString(lang, { weekday: 'long' })
-    };
+    const elm = React.createElement('div', { className: 'dv-main' },
+      React.createElement('span', { className: 'dv-time' }, this.state.time),
+      React.createElement('span', { className: 'dv-date' }, this.state.date),
+      React.createElement('span', { className: 'dv-weekend' }, this.state.weekday)
+    )
+    element.append(createElement('div', { id: 'dv-mount' }))
+    ReactDOM.render(elm, element.children[1])
+    this.interval = setInterval(() => this.updateTime(), 1000)
   }
   patchMemberList() {
     const { ListThin } = getModule(['ListThin'], false);
     inject('memberList', ListThin, 'render', (_, res) => {
       if (!document.querySelector('.membersWrap-2h-GB4')) return res
-      this.update()
+      this.updateTime()
       return res
     })
   }
-  updateMemberList() {
-    const memberList = document.querySelector('.membersWrap-2h-GB4');
-    if (memberList) getOwnerInstance(memberList).forceUpdate();
-  }
   pluginWillUnload() {
     clearInterval(this.interval)
-    clearTimeout(this.timeout)
     uninject('memberList')
     document.getElementById('dv-mount').remove()
   }
