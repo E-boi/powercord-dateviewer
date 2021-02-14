@@ -32,19 +32,20 @@ module.exports = class dateViewer extends Plugin {
     )
     element.append(createElement('div', { id: 'dv-mount' }))
     ReactDOM.render(elm, element.children[1])
-    this.interval = setInterval(() => this.updateTime(), 1000)
   }
   patchMemberList() {
     const { ListThin } = getModule(['ListThin'], false);
     inject('memberList', ListThin, 'render', (_, res) => {
       if (!document.querySelector('.membersWrap-2h-GB4')) return res
-      this.updateTime()
+      clearInterval(this.interval)
+      this.interval = setInterval(() => this.updateTime(), 1000)
       return res
     })
   }
   pluginWillUnload() {
-    clearInterval(this.interval)
     uninject('memberList')
+    console.log(this.interval)
+    clearInterval(this.interval)
     document.getElementById('dv-mount').remove()
   }
 }
