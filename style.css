@@ -1,0 +1,30 @@
+#dv-mount {
+  background-color: var(--background-secondary);
+  bottom: 0;
+  box-sizing: border-box;
+  display: flex;
+  height: 95px;
+  justify-content: center;
+  position: absolute;
+  width: 240px;
+}
+.dv-main {
+  border-top: 1px solid var(--background-modifier-accent);
+  box-sizing: border-box;
+  color: var(--text-normal);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  line-height: 20px;
+  justify-content: center;
+  text-align: center;
+  text-transform: uppercase;
+  width: calc(100% - 40px);
+}
+#dv-main .dv-date {
+  font-size: small;
+  opacity: 0.6;
+}
+.membersWrap-2h-GB4 > .members-1998pB{
+  height: calc(100% - 95px);
+}
