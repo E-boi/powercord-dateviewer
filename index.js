@@ -44,7 +44,6 @@ module.exports = class dateViewer extends Plugin {
   }
   pluginWillUnload() {
     uninject('memberList')
-    console.log(this.interval)
     clearInterval(this.interval)
     document.getElementById('dv-mount').remove()
   }
