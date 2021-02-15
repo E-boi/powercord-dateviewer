@@ -12,7 +12,6 @@ module.exports = class dateViewer extends Plugin {
     this.patchMemberList()
   }
   updateTime() {
-    const element = document.querySelector('.membersWrap-2h-GB4')
     const getViewer = document.querySelector('.dv-main')
     if (getViewer) {
       const date = new Date()
@@ -24,6 +23,10 @@ module.exports = class dateViewer extends Plugin {
       };
       return getViewer.childNodes.forEach((ele, key) => ele.textContent = Object.entries(this.state)[key][1])
     }
+  }
+  injectTime() {
+    if (document.getElementById('dv-mount')) return
+    const element = document.querySelector('.membersWrap-2h-GB4')
     if (!element) return
     const elm = React.createElement('div', { className: 'dv-main' },
       React.createElement('span', { className: 'dv-time' }, this.state.time),
@@ -31,7 +34,7 @@ module.exports = class dateViewer extends Plugin {
       React.createElement('span', { className: 'dv-weekend' }, this.state.weekday)
     )
     element.append(createElement('div', { id: 'dv-mount' }))
-    ReactDOM.render(elm, element.children[1])
+    ReactDOM.render(elm, document.getElementById('dv-mount'))
     clearInterval(this.interval)
     this.interval = setInterval(() => this.updateTime(), 1000)
   }
@@ -39,7 +42,7 @@ module.exports = class dateViewer extends Plugin {
     const { ListThin } = getModule(['ListThin'], false);
     inject('memberList', ListThin, 'render', (_, res) => {
       if (!document.querySelector('.membersWrap-2h-GB4')) return res
-      this.updateTime()
+      this.injectTime()
       return res
     })
   }
