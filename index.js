@@ -1,54 +1,26 @@
 const { Plugin } = require('powercord/entities');
 const { inject, uninject } = require('powercord/injector');
-const { createElement } = require('powercord/util')
-const { getModule, React, ReactDOM } = require('powercord/webpack');
+const { getModule, React } = require('powercord/webpack');
+const DateComponent = require('./Date');
 
 module.exports = class dateViewer extends Plugin {
-  startPlugin() {
-    this.loadStylesheet('style.css')
-    this.state = {
-      time: '', date: '', weekday: ''
-    };
-    this.patchMemberList()
-  }
-  updateTime() {
-    const getViewer = document.querySelector('.dv-main')
-    if (getViewer) {
-      const date = new Date()
-      const lang = document.documentElement.lang
-      this.state = {
-        time: date.toLocaleTimeString(lang),
-        date: date.toLocaleDateString(lang, { day: '2-digit', month: '2-digit', year: 'numeric' }),
-        weekday: date.toLocaleDateString(lang, { weekday: 'long' })
-      };
-      return getViewer.childNodes.forEach((ele, key) => ele.textContent = Object.entries(this.state)[key][1])
-    }
-  }
-  injectTime() {
-    if (document.getElementById('dv-mount')) return
-    const element = document.querySelector('.membersWrap-2h-GB4')
-    if (!element) return
-    const elm = React.createElement('div', { className: 'dv-main' },
-      React.createElement('span', { className: 'dv-time' }, this.state.time),
-      React.createElement('span', { className: 'dv-date' }, this.state.date),
-      React.createElement('span', { className: 'dv-weekend' }, this.state.weekday)
-    )
-    element.append(createElement('div', { id: 'dv-mount' }))
-    ReactDOM.render(elm, document.getElementById('dv-mount'))
-    clearInterval(this.interval)
-    this.interval = setInterval(() => this.updateTime(), 1000)
-  }
-  patchMemberList() {
-    const { ListThin } = getModule(['ListThin'], false);
-    inject('memberList', ListThin, 'render', (_, res) => {
-      if (!document.querySelector('.membersWrap-2h-GB4')) return res
-      this.injectTime()
-      return res
-    })
-  }
-  pluginWillUnload() {
-    uninject('memberList')
-    clearInterval(this.interval)
-    document.getElementById('dv-mount').remove()
-  }
-}
+	startPlugin() {
+		this.loadStylesheet('style.css');
+		this.patchMemberList();
+	}
+
+	patchMemberList() {
+		const { ListThin } = getModule(['ListThin'], false);
+		inject('memberList', ListThin, 'render', (args, res) => {
+			if (!args[0] || !args[0].innerAriaLabel?.startsWith('Members')) {
+				return res;
+			}
+			res.props.children = [res.props.children, React.createElement(DateComponent)];
+			return res;
+		});
+	}
+	pluginWillUnload() {
+		uninject('memberList');
+		document.getElementById('dv-mount').remove();
+	}
+};

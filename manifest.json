@@ -1,7 +1,7 @@
 {
-  "name": "Date viewer",
-  "version": "1.0.2",
-  "description": "Adds the date on the bottom left of discord.",
-  "author": "ugly-patootie#0611",
-  "license": "MIT"
+	"name": "Date viewer",
+	"version": "1.0.3",
+	"description": "Adds the date on the bottom left of discord.",
+	"author": "ugly-patootie#0611",
+	"license": "MIT"
 }
